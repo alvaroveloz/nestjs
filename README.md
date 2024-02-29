@@ -60,7 +60,7 @@ $ yarn run test:cov
 
 
 ### Create database
-Go to ./docker-postgres and execute
+Go to directory ./docker-postgres and execute
 
 ```bash
 docker-compose up -d
