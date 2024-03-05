@@ -5,7 +5,7 @@ import {
   CallHandler,
   UseInterceptors,
 } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -25,7 +25,7 @@ export class SerializeInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data: any) => {
         // Here I hide the password using UserDto with class-transformer
-        return plainToClass(this.dto, data, {
+        return plainToInstance(this.dto, data, {
           excludeExtraneousValues: true,
         });
       }),
