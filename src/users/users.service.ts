@@ -12,6 +12,9 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User | null> {
+    if (!id) {
+      return null;
+    }
     return this.prisma.user.findUnique({ where: { id: parseInt(id) } });
   }
 
