@@ -5,7 +5,7 @@ import {
   Param,
   Post,
   Session,
-  UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '@prisma/client';
@@ -14,11 +14,10 @@ import { AuthService } from './auth.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { UsersGuard } from './guards/users.guard';
 
 @Serialize(UserDto)
 @Controller('users')
-@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
   constructor(
     private usersService: UsersService,
@@ -30,12 +29,8 @@ export class UsersController {
     return this.usersService.create(body);
   }
 
-  // @Get('/whoami')
-  // whoAmI(@Session() session: any) {
-  //   return this.usersService.findOne(session.userId);
-  // }
-
   @Get('/whoami')
+  @UseGuards(UsersGuard)
   whoAmI(@CurrentUser() user: User) {
     return user;
   }
