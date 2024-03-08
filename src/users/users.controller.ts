@@ -11,10 +11,10 @@ import { UsersService } from './users.service';
 import { User } from '@prisma/client';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { AuthService } from './auth.service';
-import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { UsersGuard } from './guards/users.guard';
+import { Serialize } from '@/interceptors/serialize.interceptor';
 
 @Serialize(UserDto)
 @Controller('users')
