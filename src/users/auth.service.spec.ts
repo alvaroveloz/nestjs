@@ -1,16 +1,24 @@
 import { Test } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UserDto } from './dtos/user.dto';
+
 import { UsersService } from './users.service';
-// import { UsersService } from './users.service';
 
 describe('AuthService', () => {
-  it('can create an instance of auth service', async () => {
+  let service: AuthService;
+  let fakeUsersService: Partial<UsersService>;
+  const fakeUser = {
+    id: 10,
+    email: 'test-user@test.com',
+    password: '123456789',
+  };
+
+  beforeEach(async () => {
     // Create fake copy of Users service
-    const fakeUsersService = {
-      find: () => Promise.resolve([]),
-      create: (email: string, password: string) => {
-        return Promise.resolve({ id: 1, email, password } as UserDto);
+    fakeUsersService = {
+      findOne: () => Promise.resolve(null),
+      findOneByEmail: () => Promise.resolve(null),
+      create: ({ email, password }: { email: string; password: string }) => {
+        return Promise.resolve({ id: 10, name: 'Test User', email, password });
       },
     };
 
@@ -24,7 +32,16 @@ describe('AuthService', () => {
       ],
     }).compile();
 
-    const service = module.get(AuthService);
+    service = module.get(AuthService);
+  });
+  it('can create an instance of auth service', () => {
     expect(service).toBeDefined();
+  });
+  it('creates a new user with a salted and hashed password', async () => {
+    const user = await service.signup(fakeUser.email, fakeUser.password);
+    expect(user.password).not.toEqual(fakeUser.password);
+    const [salt, hash] = user.password.split('.');
+    expect(salt).toBeDefined();
+    expect(hash).toBeDefined();
   });
 });
