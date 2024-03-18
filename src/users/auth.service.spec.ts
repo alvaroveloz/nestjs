@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 
 import { UsersService } from './users.service';
+import { User } from '@prisma/client';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,11 +17,25 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     // Create fake copy of Users service
+    const users: User[] = [];
     fakeUsersService = {
-      findOne: () => Promise.resolve(null),
-      findOneByEmail: () => Promise.resolve(null),
+      findOne: (id: string) => {
+        const filteredUsers = users.filter((user) => user.id === parseInt(id));
+        return Promise.resolve(filteredUsers[0]);
+      },
+      findOneByEmail: (email: string) => {
+        const filteredUsers = users.filter((user) => user.email === email);
+        return Promise.resolve(filteredUsers[0]);
+      },
       create: ({ email, password }: { email: string; password: string }) => {
-        return Promise.resolve({ id: 10, name: 'Test User', email, password });
+        const newUser = {
+          id: new Date().getTime(),
+          email,
+          password,
+          name: 'Test User',
+        };
+        users.push(newUser);
+        return Promise.resolve(newUser);
       },
     };
 
@@ -48,7 +63,8 @@ describe('AuthService', () => {
   });
 
   it('throws an error if signup with email that is in use', async () => {
-    fakeUsersService.findOneByEmail = () => Promise.resolve(fakeUser);
+    // fakeUsersService.findOneByEmail = () => Promise.resolve(fakeUser);
+    await service.signup(fakeUser.email, fakeUser.password);
     await expect(
       service.signup(fakeUser.email, fakeUser.password),
     ).rejects.toThrow(BadRequestException);
@@ -57,5 +73,10 @@ describe('AuthService', () => {
     await expect(
       service.signin(fakeUser.email, fakeUser.password),
     ).rejects.toThrow(NotFoundException);
+  });
+  it('returns an user if correct password', async () => {
+    await service.signup(fakeUser.email, fakeUser.password);
+    const user = await service.signin(fakeUser.email, fakeUser.password);
+    expect(user).toBeDefined();
   });
 });
